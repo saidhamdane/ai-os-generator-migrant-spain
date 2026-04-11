@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Language {
+  ar
+  es
+}
+
+enum ImmigrationStatus {
+  tourist_visa
+  work_visa
+  student_visa
+  irregular
+  other
+}
+
+enum FamilySituation {
+  single
+  married_here
+  married_abroad
+  children_here
+  other
+}
+
+enum RoadmapStatus {
+  draft
+  active
+  completed
+  archived
+}
+
+enum StepStatus {
+  pending
+  in_progress
+  done
+  skipped
+}
+
+enum StepCategory {
+  registration
+  documentation
+  health
+  work
+  banking
+  education
+  other
+}
+
+enum DocumentStatus {
+  missing
+  ready
+  needs_translation
+  not_applicable
+}
+
+enum ReminderStatus {
+  pending
+  sent
+  done
+  dismissed
+}
+
+enum SubscriptionStatus {
+  inactive
+  trialing
+  active
+  past_due
+  canceled
+}
+
+enum SubscriptionPlan {
+  free
+  monthly
+  yearly
+}
+
+// ─────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────
+
+model User {
+  id                String         @id @default(uuid())
+  email             String         @unique
+  passwordHash      String
+  fullName          String?
+  preferredLanguage Language       @default(ar)
+  countryOfOrigin   String?
+  cityInSpain       String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  profile           UserProfile?
+  roadmaps          Roadmap[]
+  reminders         Reminder[]
+  subscriptions     Subscription[]
+
+  @@index([email])
+}
+
+model UserProfile {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  arrivalDate          DateTime?
+  immigrationStatus    ImmigrationStatus?
+  cityInSpain          String?
+  hasEmpadronamiento   Boolean            @default(false)
+  hasNIE               Boolean            @default(false)
+  hasTIE               Boolean            @default(false)
+  hasSocialSecurity    Boolean            @default(false)
+  isWorking            Boolean            @default(false)
+  isNonEU              Boolean            @default(true)
+  needsTranslationHelp Boolean            @default(true)
+  familySituation      FamilySituation?
+  notes                String?
+
+  intakeCompleted      Boolean            @default(false)
+  intakeStep           Int                @default(0)
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([userId])
+}
+
+model Roadmap {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  summary     String?
+  status      RoadmapStatus      @default(active)
+  generatedAt DateTime           @default(now())
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  steps       RoadmapStep[]
+  checklist   DocumentChecklist?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model RoadmapStep {
+  id            String       @id @default(uuid())
+  roadmapId     String
+  roadmap       Roadmap      @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  titleAr       String
+  titleEs       String
+  descriptionAr String
+  descriptionEs String
+
+  category      StepCategory
+  procedureSlug String?
+
+  stepOrder     Int
+  status        StepStatus   @default(pending)
+  priority      Int          @default(0)
+
+  dueDate       DateTime?
+  completedAt   DateTime?
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([roadmapId])
+  @@index([status])
+  @@unique([roadmapId, stepOrder])
+}
+
+model DocumentChecklist {
+  id        String          @id @default(uuid())
+  roadmapId String          @unique
+  roadmap   Roadmap         @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  items     ChecklistItem[]
+
+  @@index([roadmapId])
+}
+
+model ChecklistItem {
+  id               String            @id @default(uuid())
+  checklistId      String
+  checklist        DocumentChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  nameAr           String
+  nameEs           String
+  descriptionAr    String?
+  descriptionEs    String?
+
+  status           DocumentStatus    @default(missing)
+  isRequired       Boolean           @default(true)
+  needsTranslation Boolean           @default(false)
+  notes            String?
+
+  stepCategory     StepCategory
+  itemOrder        Int               @default(0)
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([checklistId])
+  @@index([status])
+}
+
+model ProcedureGuide {
+  id                  String       @id @default(uuid())
+  slug                String       @unique
+  category            StepCategory
+
+  titleAr             String
+  titleEs             String
+
+  shortExplanationAr  String
+  shortExplanationEs  String
+
+  detailedAr          String       @db.Text
+  detailedEs          String       @db.Text
+
+  importantNotesAr    String?      @db.Text
+  importantNotesEs    String?      @db.Text
+
+  isPublished         Boolean      @default(true)
+  sortOrder           Int          @default(0)
+
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model Reminder {
+  id          String         @id @default(uuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  titleAr     String
+  titleEs     String
+  description String?
+  remindAt    DateTime
+  status      ReminderStatus @default(pending)
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([remindAt])
+  @@index([status])
+}
+
+model Subscription {
+  id                     String             @id @default(uuid())
+  userId                 String
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider               String             @default("stripe")
+  providerCustomerId     String?
+  providerSubscriptionId String?            @unique
+  plan                   SubscriptionPlan   @default(free)
+  status                 SubscriptionStatus @default(inactive)
+  currentPeriodEnd       DateTime?
+
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
