@@ -1,0 +1,243 @@
+import type { ChecklistItemInput } from './types'
+
+// Document requirements per procedure slug
+const DOCUMENTS_BY_SLUG: Record<string, ChecklistItemInput[]> = {
+  empadronamiento: [
+    {
+      nameAr: 'جواز السفر (الأصل + نسخة)',
+      nameEs: 'Pasaporte (original + fotocopia)',
+      descriptionAr: 'جواز السفر ساري المفعول',
+      descriptionEs: 'Pasaporte en vigor',
+      stepCategory: 'registration',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'عقد الإيجار أو وثيقة الإقامة',
+      nameEs: 'Contrato de alquiler o documento de residencia',
+      descriptionAr: 'يُثبت عنوانك في إسبانيا. يمكن أن يكون عقد إيجار أو رسالة من المالك.',
+      descriptionEs: 'Acredita tu domicilio en España. Puede ser contrato de alquiler o carta del propietario.',
+      stepCategory: 'registration',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+    {
+      nameAr: 'نموذج طلب التسجيل (مملوء)',
+      nameEs: 'Formulario de empadronamiento (rellenado)',
+      descriptionAr: 'احصل على النموذج من موقع بلديتك أو اطلبه في المكتب.',
+      descriptionEs: 'Obtenlo en la web de tu ayuntamiento o pídelo en la oficina.',
+      stepCategory: 'registration',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 3,
+    },
+  ],
+  nie: [
+    {
+      nameAr: 'نموذج EX-15 (مملوء)',
+      nameEs: 'Formulario EX-15 (rellenado)',
+      descriptionAr: 'نموذج طلب NIE الرسمي. حمّله من موقع وزارة الداخلية.',
+      descriptionEs: 'Formulario oficial de solicitud de NIE. Descárgalo del sitio del Ministerio del Interior.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'جواز السفر (الأصل + نسخة)',
+      nameEs: 'Pasaporte (original + fotocopia)',
+      descriptionAr: 'جواز السفر ساري المفعول',
+      descriptionEs: 'Pasaporte en vigor',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+    {
+      nameAr: 'إثبات سبب طلب NIE',
+      nameEs: 'Justificación de la necesidad del NIE',
+      descriptionAr: 'مثل عقد عمل، عقد إيجار، وثيقة شراء، إلخ.',
+      descriptionEs: 'Por ejemplo: contrato laboral, contrato de alquiler, escritura de compra, etc.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 3,
+    },
+    {
+      nameAr: 'إيصال دفع رسوم النموذج 790',
+      nameEs: 'Resguardo de pago de la tasa (Modelo 790)',
+      descriptionAr: 'ادفع رسوم NIE في أي بنك باستخدام النموذج 790 الكود 012.',
+      descriptionEs: 'Paga la tasa del NIE en cualquier banco con el Modelo 790 Código 012.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 4,
+    },
+    {
+      nameAr: 'صورة شمسية حديثة',
+      nameEs: 'Fotografía tipo carné reciente',
+      descriptionAr: 'صورة بيضاء الخلفية، مقاس جواز السفر.',
+      descriptionEs: 'Fondo blanco, tamaño carné.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 5,
+    },
+  ],
+  tie: [
+    {
+      nameAr: 'نموذج EX-17 (مملوء)',
+      nameEs: 'Formulario EX-17 (rellenado)',
+      descriptionAr: 'نموذج طلب TIE الرسمي.',
+      descriptionEs: 'Formulario oficial de solicitud de TIE.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'جواز السفر + نسخة',
+      nameEs: 'Pasaporte + fotocopia',
+      descriptionAr: 'ساري المفعول.',
+      descriptionEs: 'En vigor.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+    {
+      nameAr: 'رقم NIE',
+      nameEs: 'Número de NIE',
+      descriptionAr: 'يجب أن تكون حصلت عليه مسبقًا.',
+      descriptionEs: 'Debes haberlo obtenido previamente.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 3,
+    },
+    {
+      nameAr: 'إيصال دفع رسوم النموذج 790 كود 012',
+      nameEs: 'Resguardo de tasa Modelo 790 Código 012',
+      descriptionAr: 'ادفع رسوم TIE في أي بنك.',
+      descriptionEs: 'Paga la tasa en cualquier banco.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 4,
+    },
+    {
+      nameAr: '3 صور شمسية',
+      nameEs: '3 fotografías tipo carné',
+      descriptionAr: 'بيضاء الخلفية.',
+      descriptionEs: 'Fondo blanco.',
+      stepCategory: 'documentation',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 5,
+    },
+  ],
+  'seguridad-social': [
+    {
+      nameAr: 'جواز السفر أو بطاقة الهوية + نسخة',
+      nameEs: 'Pasaporte o DNI/NIE + fotocopia',
+      stepCategory: 'registration',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'عقد العمل أو سبب التسجيل',
+      nameEs: 'Contrato laboral o motivo de afiliación',
+      stepCategory: 'registration',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+  ],
+  'cuenta-bancaria': [
+    {
+      nameAr: 'جواز السفر (الأصل)',
+      nameEs: 'Pasaporte (original)',
+      stepCategory: 'banking',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'رقم NIE (إن توفر)',
+      nameEs: 'NIE (si lo tienes)',
+      descriptionAr: 'ليس شرطًا في جميع البنوك، لكنه يمنحك حسابًا أفضل.',
+      descriptionEs: 'No obligatorio en todos los bancos, pero te da más beneficios.',
+      stepCategory: 'banking',
+      isRequired: false,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+    {
+      nameAr: 'عنوانك في إسبانيا',
+      nameEs: 'Dirección postal en España',
+      stepCategory: 'banking',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 3,
+    },
+  ],
+  'tarjeta-sanitaria': [
+    {
+      nameAr: 'رقم الاشتراك في الضمان الاجتماعي (NUSS)',
+      nameEs: 'Número de Afiliación a la Seguridad Social (NUSS)',
+      stepCategory: 'health',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'وثيقة تعريف سارية (جواز / NIE / TIE)',
+      nameEs: 'Documento de identificación válido (pasaporte / NIE / TIE)',
+      stepCategory: 'health',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+    {
+      nameAr: 'شهادة التسجيل في البلدية (Empadronamiento)',
+      nameEs: 'Certificado de empadronamiento',
+      stepCategory: 'health',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 3,
+    },
+  ],
+  'sepe-demandante': [
+    {
+      nameAr: 'وثيقة تعريف (جواز / NIE / TIE)',
+      nameEs: 'Documento de identidad (pasaporte / NIE / TIE)',
+      stepCategory: 'work',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 1,
+    },
+    {
+      nameAr: 'رقم الاشتراك في الضمان الاجتماعي (NUSS)',
+      nameEs: 'Número de Afiliación a la Seguridad Social (NUSS)',
+      stepCategory: 'work',
+      isRequired: true,
+      needsTranslation: false,
+      itemOrder: 2,
+    },
+  ],
+}
+
+export function generateChecklist(
+  stepSlugs: (string | null | undefined)[]
+): ChecklistItemInput[] {
+  const items: ChecklistItemInput[] = []
+  for (const slug of stepSlugs) {
+    if (slug && DOCUMENTS_BY_SLUG[slug]) {
+      items.push(...DOCUMENTS_BY_SLUG[slug])
+    }
+  }
+  return items
+}

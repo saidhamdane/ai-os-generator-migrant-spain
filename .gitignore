@@ -3,8 +3,13 @@ node_modules
 dist
 build
 .env
-.env.*
+.env.local
+.env.*.local
 coverage
 .vercel
 .DS_Store
 *.log
+
+# Track .env.example (it's safe — no real secrets)
+!.env.example
+!migrant-copilot/.env.example
